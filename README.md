@@ -4,6 +4,23 @@ LangChainでローカルMarkdownノートを検索するRAG実装集です。
 
 最初はシンプルなRAGから始めて、HyDE、Multi Query、RRF、BM25、Web検索との組み合わせまで段階的に試せます。
 
+## 全体像
+
+```mermaid
+flowchart LR
+    Q[質問] --> R[Retriever]
+    N[Markdown Notes] --> L[DirectoryLoader]
+    L --> S[Text Splitter]
+    S --> E[OpenAI Embeddings]
+    E --> C[(Chroma)]
+    C --> R
+    R --> P[Prompt]
+    P --> M[Chat Model]
+    M --> A[回答]
+```
+
+基本は、ローカルのMarkdownノートをチャンク化してChromaに入れ、質問に近いチャンクを検索してLLMに渡す流れです。
+
 ## セットアップ
 
 ```bash
@@ -55,8 +72,13 @@ uv run python examples/simple_notes_rag.py \
 
 基本形です。
 
-```text
-Markdown読み込み → チャンク分割 → Embedding → Chroma → Retriever → LLM
+```mermaid
+flowchart LR
+    Q[質問] --> V[Chroma Retriever]
+    V --> D[関連ノート]
+    D --> P[Prompt]
+    P --> LLM[LLM]
+    LLM --> A[回答]
 ```
 
 ### 2. HyDE
@@ -70,6 +92,14 @@ uv run python examples/hyde.py \
 質問から仮の回答文を生成し、その文章で検索します。
 抽象的な質問を検索しやすい意味の塊に変換する手法です。
 
+```mermaid
+flowchart LR
+    Q[質問] --> H[LLMで仮回答を生成]
+    H --> V[仮回答でベクトル検索]
+    V --> D[関連ノート]
+    D --> A[回答生成]
+```
+
 ### 3. Multi Query + RRF
 
 ```bash
@@ -79,6 +109,21 @@ uv run python examples/multi_query.py \
 ```
 
 質問から複数の検索クエリを生成し、それぞれの検索結果をRRFで統合します。
+
+```mermaid
+flowchart LR
+    Q[質問] --> G[検索クエリを3つ生成]
+    G --> Q1[Query 1]
+    G --> Q2[Query 2]
+    G --> Q3[Query 3]
+    Q1 --> R1[検索結果]
+    Q2 --> R2[検索結果]
+    Q3 --> R3[検索結果]
+    R1 --> F[RRFで統合]
+    R2 --> F
+    R3 --> F
+    F --> A[回答生成]
+```
 
 ### 4. BM25 + Vector Hybrid
 
@@ -90,6 +135,15 @@ uv run python examples/hybrid_bm25_vector.py \
 
 古典的なキーワード検索であるBM25と、Embeddingによる意味検索を組み合わせます。
 
+```mermaid
+flowchart LR
+    Q[質問] --> B[BM25検索]
+    Q --> V[ベクトル検索]
+    B --> F[RRFで統合]
+    V --> F
+    F --> A[回答生成]
+```
+
 ### 5. Router: Notes or Web
 
 ```bash
@@ -100,6 +154,15 @@ uv run python examples/router_notes_web.py \
 
 LLMが質問内容に応じて、ノート検索かWeb検索かを選びます。
 
+```mermaid
+flowchart LR
+    Q[質問] --> Router[LLM Router]
+    Router -->|自分のこと| Notes[ノート検索]
+    Router -->|一般知識・最新情報| Web[Brave Web検索]
+    Notes --> A[回答生成]
+    Web --> A
+```
+
 ### 6. Notes + Web Hybrid
 
 ```bash
@@ -109,6 +172,15 @@ uv run python examples/hybrid_notes_web.py \
 ```
 
 ノートの意味検索とBrave Web検索を両方実行し、RRFで統合します。
+
+```mermaid
+flowchart LR
+    Q[質問] --> Notes[ノートのベクトル検索]
+    Q --> Web[Brave Web検索]
+    Notes --> F[RRFで統合]
+    Web --> F
+    F --> A[回答生成]
+```
 
 ## 共通オプション
 
