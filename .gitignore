@@ -1,0 +1,13 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+
+# Local environment / secrets
+.env
+.env.*
+.envrc
+
+# uv / tooling caches
+.pytest_cache/
+.ruff_cache/
