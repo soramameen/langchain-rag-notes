@@ -41,26 +41,92 @@ Web検索を使う例では Brave Search API キーも必要です。
 export BRAVE_SEARCH_API_KEY="..."
 ```
 
-## 使い方
+## pi スキルとして使う
 
-Markdownファイルが入ったディレクトリを指定して実行します。
-
-```bash
-uv run python examples/simple_notes_rag.py \
-  --notes-dir /path/to/your/notes \
-  --question "私の学びを教えて"
-```
-
-複数ディレクトリも指定できます。
+このリポジトリには `skills/rag-notes/SKILL.md` があります。pi-agent に認識させるには、グローバルのスキルディレクトリにコピーまたはシンボリックリンクを貼ってください。
 
 ```bash
-uv run python examples/simple_notes_rag.py \
-  --notes-dir /path/to/notes1 \
-  --notes-dir /path/to/notes2 \
-  --question "最近の関心を教えて"
+# シンボリックリンクで管理（推奨）
+ln -s /path/to/this/repo/skills/rag-notes ~/.pi/agent/skills/rag-notes
+
+# またはコピー
+cp -r /path/to/this/repo/skills/rag-notes ~/.pi/agent/skills/
 ```
 
-## Examples
+これで pi は「自分のノートを探して」「過去の学びを教えて」と言われた時に、自動で `rag` コマンドを使うようになります。
+
+## CLI コマンド `rag`
+
+全ての戦略を統一した CLI コマンド `rag` が使えます。任意のディレクトリから実行できます。
+
+### インストール
+
+```bash
+# このリポジトリ内で
+uv tool install .
+
+# pip の場合
+pip install -e .
+```
+
+アンインストールは `uv tool uninstall langchain-practice` または `pip uninstall langchain-practice` です。
+
+### 初期設定
+
+対話式で検索対象ディレクトリとデフォルト strategy を登録します。設定は `~/.config/rag/config.json` に保存されます。
+
+```bash
+rag init
+```
+
+### 質問する
+
+```bash
+# 設定済みのノートディレクトリに対して質問（最もシンプル）
+rag "私の学びを教えて"
+
+# strategy を切り替え
+rag "私の学びを教えて" --strategy hyde
+rag "私の学びを教えて" --strategy multi-query
+
+# 一時的にディレクトリを指定（config の設定を上書き）
+rag "最近の関心を教えて" --notes-dir ~/notes1 --notes-dir ~/notes2
+
+# agent-notes（AI生成・構造化ノート）も一緒に検索
+rag "最近の関心を教えて" \
+  --notes-dir ~/notes \
+  --agent-notes-dir ~/agent-notes
+```
+
+`--notes-dir` は自分の言葉で書いたノート、`--agent-notes-dir` はAI生成や構造化されたノートに使います。検索結果では `source_type` として区別され、LLMに渡る文脈にも「自分の言葉のノート」か「AI生成ノート」かが明示されます。
+
+利用可能な strategy:
+
+| strategy | 説明 |
+|----------|------|
+| `simple` | ベクトル検索のみの基本形 |
+| `hyde` | HyDE（仮回答で検索） |
+| `multi-query` | 複数クエリ生成 + RRF |
+| `hybrid-bm25-vector` | BM25 + ベクトル検索のハイブリッド |
+| `router` | LLMがノート検索かWeb検索かを自動選択 |
+| `hybrid-notes-web` | ノート検索 + Web検索を両方実行して統合 |
+
+### インデックスの事前構築
+
+ノートが多い場合、事前にインデックスを構築しておくと高速です。
+
+```bash
+rag index --notes-dir ~/notes --agent-notes-dir ~/agent-notes --db-dir ~/.local/share/rag/db
+rag "..." --db-dir ~/.local/share/rag/db --strategy simple
+```
+
+`--db-dir` を使う場合、`hybrid-bm25-vector` は使用できません（BM25用の生テキストが必要なため）。
+
+---
+
+## Examples（スクリプト直接実行）
+
+`examples/` ディレクトリのスクリプトを直接実行することもできます。
 
 ### 1. Simple RAG
 
