@@ -1,6 +1,9 @@
-# rag-notes
+---
+name: rag-notes
+description: Use when the user asks about their own past notes, personal learnings, experiences, thoughts, diary entries, interests, worries, or anything that might be recorded in their local Markdown files.
+---
 
-Use when the user asks about their own past notes, personal learnings, experiences, thoughts, diary entries, interests, worries, or anything that might be recorded in their local Markdown files.
+# rag-notes
 
 Also use when the user says things like:
 - "私のノートを探して"
