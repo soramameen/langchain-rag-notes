@@ -43,10 +43,22 @@ export BRAVE_SEARCH_API_KEY="..."
 
 ## pi スキルとして使う
 
-このリポジトリには `skills/rag-notes/SKILL.md` があります。pi-agent に認識させるには、グローバルのスキルディレクトリにコピーまたはシンボリックリンクを貼ってください。
+このリポジトリには `skills/rag-notes/SKILL.md` があります。pi-agent に認識させるには、`rag install-skill` を使うか、手動で配置してください。
+
+### rag install-skill で自動配置（推奨）
 
 ```bash
-# シンボリックリンクで管理（推奨）
+rag install-skill --link        # シンボリックリンクで配置
+rag install-skill               # コピーで配置
+rag install-skill --force       # 上書き更新
+```
+
+`--link` を使うと、リポジトリ内のスキルファイルを更新した際に pi-agent も自動で最新になります。
+
+### 手動で配置する場合
+
+```bash
+# シンボリックリンクで管理
 ln -s /path/to/this/repo/skills/rag-notes ~/.pi/agent/skills/rag-notes
 
 # またはコピー
