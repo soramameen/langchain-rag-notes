@@ -17,7 +17,6 @@ dependencies = [
     "langchain-chroma==0.1.4",
     "langgraph==0.2.22",
     "langchain==0.3.0",
-    "pygraphviz>=1.14",
     "rank-bm25 == 0.2.2",
 ]
 
