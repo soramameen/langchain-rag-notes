@@ -62,12 +62,18 @@ cp -r /path/to/this/repo/skills/rag-notes ~/.pi/agent/skills/
 ### インストール
 
 ```bash
-# このリポジトリ内で
+# 1. リポジトリをクローン（または任意の場所に置く）
+git clone https://github.com/soramameen/langchain-rag-notes.git
+cd langchain-rag-notes
+
+# 2. グローバルにインストール
 uv tool install .
 
 # pip の場合
 pip install -e .
 ```
+
+`~/.local/bin/rag` にエントリポイントが作成されます。`~/.local/bin` が PATH に含まれていることを確認してください。
 
 アンインストールは `uv tool uninstall langchain-practice` または `pip uninstall langchain-practice` です。
 
